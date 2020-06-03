@@ -72,7 +72,7 @@ class SceneMain extends Phaser.Scene {
     this.left.on('pointerdown', this.moveCarLeft.bind(this));
     this.left.setDepth(1);
     this.left.setVisible(false);
-    
+
     this.right = this.add.image(this.width, this.height, 'right');
     this.right.setScale(this.width / this.lanesTotal / this.right.width);
     this.right.setOrigin(1.25, 1.25);
@@ -101,8 +101,8 @@ class SceneMain extends Phaser.Scene {
     this.moveCar();
     this.car.setScale(this.width / this.lanesTotal / this.car.width);
     this.car.setOrigin(0, 1);
-    this.input.keyboard.on('keydown-LEFT', this.moveCarLeft);
-    this.input.keyboard.on('keydown-RIGHT', this.moveCarRight);
+    this.input.keyboard.on('keydown-LEFT', this.moveCarLeft.bind(this));
+    this.input.keyboard.on('keydown-RIGHT', this.moveCarRight.bind(this));
     this.input.keyboard.on('keydown-UP', (event) => {
       this.speed = Math.min(10, this.speed + 1);
     });
