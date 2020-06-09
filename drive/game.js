@@ -26,7 +26,7 @@ class SceneMain extends Phaser.Scene {
     super('SceneMain');
     this.width = config.width;
     this.height = config.height;
-    this.lane = 2;
+    this.lane = 3;
     this.speed = 0;
     this.linesCounter = 0;
     this.lanesTotal = 5;
@@ -38,16 +38,44 @@ class SceneMain extends Phaser.Scene {
     this.load.image('play', 'assets/play.png');
     this.load.image('right', 'assets/right.png');
     this.load.image('left', 'assets/left.png');
+    this.load.spritesheet('cars', 'assets/cars.png', { frameWidth: 640, frameHeight: 1285 });
     this.load.audio('theme', ['assets/ES_The Perfect Picture - Sunshine Coast.mp3', 'assets/ES_The Perfect Picture - Sunshine Coast.ogg']);
   }
   create() {
     this.createControl();
     this.createCar();
     this.createLines();
+    this.createMusic();
+
+    // comment me in production
+    // this.start();
   }
 
   update() {
     this.moveLines();
+    this.moveCars();
+    this.collide();
+  }
+
+  start() {
+    this.speed = 3;
+    this.play.setVisible(false);
+    this.left.setVisible(true);
+    this.right.setVisible(true);
+    this.car.setVisible(true);
+    this.createCars();
+    this.music.play('loop');
+  }
+
+  stop() {
+    this.speed = 0;
+    this.play.setVisible(true);
+    this.left.setVisible(false);
+    this.right.setVisible(false);
+    this.car.setVisible(false);
+    this.cars.setVisible(false);
+    this.destroyCars();
+    this.music.stop();
   }
 
   createControl() {
@@ -55,15 +83,7 @@ class SceneMain extends Phaser.Scene {
     this.play.setScale(this.width / 3 / this.play.width);
     this.play.setOrigin(0.5, 0.5);
     this.play.setInteractive();
-    this.play.on('pointerdown', () => {
-      this.createMusic();
-      this.speed = 3;
-      this.play.setVisible(false);
-      this.left.setVisible(true);
-      this.right.setVisible(true);
-      this.car.setVisible(true);
-    });
-
+    this.play.on('pointerdown', this.start.bind(this));
 
     this.left = this.add.image(0, this.height, 'left');
     this.left.setScale(this.width / this.lanesTotal / this.left.width);
@@ -80,27 +100,26 @@ class SceneMain extends Phaser.Scene {
     this.right.on('pointerdown', this.moveCarRight.bind(this));
     this.right.setDepth(1);
     this.right.setVisible(false);
-
   }
 
   createMusic() {
-    const music = this.sound.add('theme');
-    music.addMarker({
+    this.music = this.sound.add('theme');
+    this.music.addMarker({
       name: 'loop',
       start: 0,
-      duration: music.duration,
+      duration: this.music.duration,
       config: {
         loop: true
       }
     });
-    music.play('loop');
   }
 
   createCar() {
     this.car = this.add.image(0, 0, 'car');
-    this.moveCar();
     this.car.setScale(this.width / this.lanesTotal / this.car.width);
     this.car.setOrigin(0, 1);
+    this.moveCar();
+
     this.input.keyboard.on('keydown-LEFT', this.moveCarLeft.bind(this));
     this.input.keyboard.on('keydown-RIGHT', this.moveCarRight.bind(this));
     this.input.keyboard.on('keydown-UP', (event) => {
@@ -152,7 +171,45 @@ class SceneMain extends Phaser.Scene {
       this.linesCounter = 0;
     }
   }
+
+  createCars() {
+    setTimeout(() => {
+      this.cars = this.add.sprite(this.width / this.lanesTotal * Math.floor(Math.random() * this.lanesTotal), 0, 'cars');
+      this.cars.setScale(this.width / this.lanesTotal / this.cars.width * 0.8);
+      this.cars.setOrigin(-0.15, 1);
+      this.cars.setVisible(true);
+    }, Math.random() * 3000);
+  }
+
+  moveCars() {
+    if (this.cars) {
+      this.cars.setY(this.cars.y + this.speed * 1.5);
+      if (this.cars.y > this.height + this.cars.displayHeight) {
+        this.destroyCars();
+        this.createCars();
+      }
+    }
+  }
+
+  destroyCars() {
+    if (this.cars) {
+      this.cars.destroy();
+      this.cars = undefined;
+    }
+  }
+
+  collide() {
+    if (this.car && this.cars) {
+      var boundsCar = this.car.getBounds();
+      var boundsCars = this.cars.getBounds();
+      var intersection = Phaser.Geom.Rectangle.Intersection(boundsCar, boundsCars);
+      if (intersection.width > this.width * 0.1 || intersection.height > this.height * 0.1) {
+        this.stop();
+      }
+    }
+  }
 }
+
 
 config = {
   ...config,
