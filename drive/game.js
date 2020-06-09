@@ -40,12 +40,14 @@ class SceneMain extends Phaser.Scene {
     this.load.image('left', 'assets/left.png');
     this.load.spritesheet('cars', 'assets/cars.png', { frameWidth: 640, frameHeight: 1285 });
     this.load.audio('theme', ['assets/ES_The Perfect Picture - Sunshine Coast.mp3', 'assets/ES_The Perfect Picture - Sunshine Coast.ogg']);
+    this.load.audio('crash', ['assets/car-crash.mp3', 'assets/car-crash.ogg']);
   }
   create() {
     this.createControl();
     this.createCar();
     this.createLines();
     this.createMusic();
+    this.createCrash();
 
     // comment me in production
     // this.start();
@@ -76,6 +78,7 @@ class SceneMain extends Phaser.Scene {
     this.cars.setVisible(false);
     this.destroyCars();
     this.music.stop();
+    this.crash.play();
   }
 
   createControl() {
@@ -112,6 +115,10 @@ class SceneMain extends Phaser.Scene {
         loop: true
       }
     });
+  }
+
+  createCrash() {
+    this.crash = this.sound.add('crash');
   }
 
   createCar() {
